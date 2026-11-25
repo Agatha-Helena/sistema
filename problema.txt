@@ -1,0 +1,27 @@
+DESTAQUES:
+
+- autenticação dos usuários com tempo de expiração;
+- proteção dos dados pessoais armazenados;
+- documentação técnica do sistema (incluindo requisitos funcionais e a geração do diagrama entidade relacionamento)
+
+REGRAS DE NEGÓCIO
+
+- script pelo menos três registros por tabela
+|> pedir pro chat ou inventar
+
+- validação em caso de falha na autenticação no login
+|> ???
+
+- CPF criptografado
+|> function
+
+- principal: nome do usuário logado e uma forma de acessar os demais recursos, assim como uma maneira de sair do sistema
+|> {{nome}} e href=''
+
+- paciente: busca para exibir a listagem atualizada com os registros da tabela que correspondem a pesquisa (permitir editar os dados de um paciente já cadastrado, salvando a alteração no banco de dados)
+|> {{#editando}} e {{/editando}}
+
+- agendamento: exibir listagem das sessões cadastradas ordenada por dia da sessão trazendo todos os dados do paciente e do plano de tratamento, permitir atualizar a data de uma sessão já cadastrada, salvando a alteração
+|> SELECT * FROM pacientes, SELECT * FROM tratamentos e date_time
+
+- novo plano de tratamento deve associá-lo a um paciente
