@@ -16,43 +16,46 @@ const cpf1 = criptografarCpf('11122233344')
 const cpf2 = criptografarCpf('44455566677')
 const cpf3 = criptografarCpf('77788899900')
 
-const sql = `CREATE DATABASE IF NOT EXISTS db_fisioterapia;
+const sql = `
+CREATE DATABASE IF NOT EXISTS db_fisioterapia;
 USE db_fisioterapia;
 
-CREATE TABLE IF NOT EXISTS paciente (
-	id_paciente INT AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS pacientes (
+    id_paciente INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
-    cpf INT NOT NULL UNIQUE,
+    cpf VARCHAR(255) NOT NULL UNIQUE,
     email VARCHAR(200) NOT NULL,
-    telefone INT NOT NULL
+    telefone VARCHAR(20) NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS tratamento (
-	id_tratamento INT AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS tratamentos (
+    id_tratamento INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
-    preco INT NOT NULL,
+    preco DECIMAL(10,2) NOT NULL,
     id_paciente INT NOT NULL,
-    FOREIGN KEY(id_paciente) REFERENCES paciente (id_paciente)
+    FOREIGN KEY (id_paciente) REFERENCES paciente(id_paciente)
 );
 
-CREATE TABLE IF NOT EXISTS agendamento (
-	id_agendamento INT AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS agendamentos (
+    id_agendamento INT AUTO_INCREMENT PRIMARY KEY,
     data_hora DATETIME NOT NULL,
     id_tratamento INT NOT NULL UNIQUE,
-    FOREIGN KEY(id_tratamento) REFERENCES tratamento(id_tratamento)
+    FOREIGN KEY (id_tratamento) REFERENCES tratamento(id_tratamento)
 );
 
-CREATE TABLE IF NOT EXISTS usuario_admin(
-	nome VARCHAR(100) NOT NULL,
-    email VARCHAR(200) NOT NULL,
+CREATE TABLE IF NOT EXISTS usuario_admin (
+    id_admin INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    email VARCHAR(200) NOT NULL UNIQUE,
     senha VARCHAR(255) NOT NULL
 );
 
+
 INSERT INTO usuario_admin(nome, email, senha) VALUES ('Admin', 'admin@fisioterapia.com', '$2a$10$3jLjOS4/vbPxxrSOttbC6uDgmSSbhOu8QS/.iW5Ik4uyUhEvi8CFq');
 
-INSERT INTO agendamento(data_hora, id_tratamento) VALUES ('2026-11-05 09:00:00', 1), ('2026-11-05 09:30:00', 2), ('2026-11-05 10:00:00', 3);
+INSERT INTO agendamentos(data_hora, id_tratamento) VALUES ('2026-11-05 09:00:00', 1), ('2026-11-05 09:30:00', 2), ('2026-11-05 10:00:00', 3);
 
-INSERT INTO tratamento(nome, preco, id_paciente) VALUES ('Tratamento 1', 25.00, 1), ('Tratamento 2', 37.00, 2), ('Tratamento 3', 100, 3);`
+INSERT INTO tratamentos(nome, preco, id_paciente) VALUES ('Tratamento 1', 25.00, 1), ('Tratamento 2', 37.00, 2), ('Tratamento 3', 100, 3);`
 
 
 const caminhoSaida = path.join(__dirname, 'database', 'script.sql')

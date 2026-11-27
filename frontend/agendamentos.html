@@ -14,14 +14,14 @@
         <tr>
             <th>Data</th>
             <th>Tratamento</th>
-            <th>Clientes</th>
+            <th>Pacientes</th>
             <th>Alterar data</th>
         </tr>
         {{#agendamentos}}
         <tr>
             <td>{{data_br}}</td>
             <td>{{tratamento}}</td>
-            <td>{{cliente_nome}}</td>
+            <td>{{paciente_nome}}</td>
             <td>
                 <form method="POST" action="/agendamentos/{{id}}">
                     <input type="hidden" name="_method" value="PUT"/>

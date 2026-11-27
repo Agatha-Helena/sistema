@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fisio+ - Tratamentos</title>
+</head>
+<body>
+    <h1>TRATAMENTOS</h1>
+    <p><a href="/principal">Voltar</a></p>
+    
+    <table border="1">
+        <tr>
+            <th>Tratamento</th>
+            <th>Preço</th>
+            <th>Paciente</th>
+        </tr>
+        {{#tratamentos}}
+        <tr>
+            <td>{{tratamento}}</td>
+            <td>{{preco}}</td>
+            <td>{{paciente}}</td>
+            <td>
+                <a href="/veiculos?editar={{id}}">Editar</a>
+                <form method="POST" action="/veiculos/{{id}}">
+                    <input type="hidden" name="_method" value="DELETE"/>
+                    <button>Excluir</button>
+                </form>
+            </td>
+        </tr>
+        {{/tratamentos}}
+    </table>
+
+    <h2>{{#editando}}Editar{{/editando}}{{^editando}}Cadastrar{{/editando}}</h2>
+
+    <form method="POST" action="{{acao}}">
+        {{#editando}}
+        <input type="hidden" name="_method" value="PUT"/>
+        {{/editando}}
+
+        <select name="id_paciente" required>
+            <option value="">Selecione o paciente</option>
+            {{#pacientes}}
+            <option value="{{id}}" {{selecionado}}>{{nome}}</option>
+            {{/pacientes}}
+        </select>
+
+        <input type="text" name="tratamento" placeholder="Tratamento" value="{{form.placa}}"/>
+        <input type="number" name="preco" placeholder="Preço" value="{{form.marca}}"/>
+
+        <button>{{#editando}}Salvar{{/editando}}{{^editando}}Cadastrar{{/editando}}</button>
+    </form>
+
+    <p>{{erro}}</p>
+</body>
+</html>

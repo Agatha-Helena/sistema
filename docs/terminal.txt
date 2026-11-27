@@ -1,0 +1,15 @@
+# APAGUE ESSE DOCUMENTO DEPOIS!!!
+
+npm install mysql2 express dotenv bcryptjs jsonwebtoken cookie-parser mustache
+
+Adicione, no package.json, após linha 
+
+"test":"echo\"Error: no test specified\"&&exit1"
+esse código:
+
+"start":"node app.js",
+"gerar-script": "node gerar-script.js"
+
+Depois que terminar o gerar-script.js: 
+
+npm run gerar-script
