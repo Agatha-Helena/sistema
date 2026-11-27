@@ -52,14 +52,14 @@ function descriptografar(texto){
 
 async function excluir(res, tabela, id, volta, motivo) {
     try {
-        await db.query(`DELETE FROM ${tabela} WHERE id = ?`, [id])
+        await db.query(`DELETE FROM ${tabela} WHERE id = ?`, [id]);
         res.redirect(volta)
     } catch (error) {
         if(error.code === 'ER_ROW_IS_REFERENCED_2'){
-            return res.status(409).send(`<p>Nao foi possivel excluir: ${motivo}.</p><p><a href='${volta}'>Voltar</a></p>`)
+            return res.status(409).send(`<p>Não foi possível excluir: ${motivo}.</p><p><a href='${volta}'>Voltar</a></p>`)
         }
         console.error(error)
-        res.status(500).send(`<p>Erro ao excluir.</p><p><a href='${voltar}'>Voltar</a></p>`)
+        res.status(500).send(`<p>Erro ao excluir.</p><p><a href='${volta}'>Voltar</a></p>`)
     }
 }
 
@@ -121,20 +121,28 @@ app.post('/pacientes', async(req,res) =>{
     res.redirect('/pacientes')
 })
 
+app.put('/pacientes/:id', async (req, res) => {
+    const { nome, cpf, telefone, email } = req.body;
+    await db.query(
+        "UPDATE pacientes SET nome = ?, cpf = ?, telefone = ?, email = ? WHERE id = ?", [nome, criptografar(cpf), telefone, email, req.params.id]
+    )
+    res.redirect("/pacientes")
+})
+
 app.delete('/pacientes/:id', async(req,res) => {
-    await excluir(res, 'pacientes', req.params.id,'/pacientes', 'o paciente possui tratamentos cadastrados')
+    await excluir(res, 'pacientes', req.params.id,'/pacientes', 'o paciente possui tratamento agendado')
 })
 
 async function mostrarTratamentos(req, res, erro = ''){
     const [tratamentos] = await db.query('SELECT * FROM tratamentos')
 
-    const [listaPacientes] = await db.query('SELECT id, nome FROM pacientes')
+    const [listaPacientes] = await db.query('SELECT id_paciente, nome FROM pacientes')
 
-    const editar = tratamentos.find(v => String(v.id) === req.query.editar)
+    const editar = tratamentos.find(t => String(t.id_tratamento) === req.query.editar)
 
     const pacientes = listaPacientes.map((paciente) => ({
         ...paciente,
-        selecionado: editar && paciente.id === editar.id_paciente ? 'selected' : ''
+        selecionado: editar && paciente.id === editar.paciente_id ? 'selected' : ''
     }))
 
     res.send(mostrar('tratamentos', {
@@ -150,32 +158,73 @@ async function mostrarTratamentos(req, res, erro = ''){
 app.get('/tratamentos', (req, res) => mostrarTratamentos(req, res))
 
 app.post('/tratamentos', async (req, res) =>{
-    const {id_paciente, tratamento, preco} = req.body
+    const {cliente_id, placa, marca, modelo, ano} = req.body
 
-    if(!id_paciente){
-        return mostrarTratamentos(req,res, 'id_paciente é obrigatório')
+    if(!cliente_id){
+        return mostrarVeiculos(req,res, 'cliente_id é obrigatório')
     }
 
-    await db.query ('INSERT INTO tratamentos (id_paciente, tratamento, preco) VALUES (?, ?, ?)', [id_paciente, tratamento, preco || null])
+    await db.query ('INSERT INTO veiculos (cliente_id, placa, marca, modelo, ano) VALUES (?, ?, ?, ?, ?)', [cliente_id, placa, marca, modelo, ano || null])
 
-    res.redirect('/tratamentos')
+    res.redirect('/veiculos')
 })
 
-app.put('/tratamentos/:id', async (req,res) => {
-    const {id_paciente, tratamento, preco} = req.body
+app.put('/veiculos/:id', async (req,res) => {
+    const {cliente_id, placa, marca, modelo, ano} = req.body
 
-    if(!id_paciente){
-        return mostrarTratamentos(req, res, 'id_paciente e obrigatorio')
+    if(!cliente_id){
+        return mostrarVeiculos(req, res, 'cliente_id e obrigatorio')
     }
 
-    await db.query('UPDATE tratamentos SET id_paciente = ?, tratamento = ?, preco = ? WHERE id = ?', [id_paciente, tratamento, preco || null, req.params.id])
+    await db.query('UPDATE veiculos SET cliente_id = ?, placa = ?, marca = ?, modelo = ?, ano = ? WHERE id = ?', [cliente_id, placa, marca, modelo, ano || null, req.params.id])
+
+    res.redirect('/veiculos')
 })
 
-app.delete('/tratamentos/:id', async (req, res) =>{
-    await excluir(res, 'tratamentos', req.params.id, '/tratamentos', 'o tratamento possui agendamento')
+app.delete('/veiculos/:id', async (req, res) =>{
+    await excluir(res, 'veiculos', req.params.id, '/veiculos', 'o veiculo possui agendamento')
+})
+
+// -------------
+
+app.get("/agendamentos", async (req, res) => {
+  const [lista] = await db.query(
+    "SELECT agendamentos.*, veiculos.placa, veiculos.marca, veiculos.modelo, clientes.nome AS cliente_nome FROM agendamentos JOIN veiculos ON veiculos.id = agendamentos.id_veiculo JOIN clientes ON clientes.id = veiculos.cliente_id ORDER BY agendamentos.data_agendamento ASC",
+  );
+
+  const [veiculos] = await db.query("SELECT * FROM veiculos");
+
+  const agendamentos = lista.map((a) => ({
+    ...a,
+    data_br: new Date(a.data_agendamento).toLocaleString("pt-BR"),
+    data_input: a.data_agendamento.slice(0, 16).replace(" ", "T"),
+  }));
+  res.send(mostrar("agendamentos", { agendamentos, veiculos }));
+});
+
+app.post("/agendamentos", async (req, res) => {
+  const { id_veiculo, data_agendamento, servico } = req.body;
+
+  await db.query(
+    "INSERT INTO agendamentos (id_veiculo, data_agendamento, servico) VALUES (?, ?, ?)",
+    [id_veiculo, data_agendamento.replace("", " "), servico],
+  );
+  res.redirect("/agendamentos");
+});
+
+app.put("/agendamentos/:id", async (req, res) => {
+  await db.query("UPDATE agendamentos SET data_agendamento = ? WHERE id = ?", [
+    req.body.data_agendamento.replace("T", " "),
+    req.params.id,
+  ]);
+  res.redirect("/agendamentos");
+});
+
+app.delete("/agendamentos/:id", async (req, res) => {
+  await excluir(res, "agendamentos", req.params.id, "/agendamentos", " ")
 })
 
 const port = process.env.PORT || 3000
 app.listen(port, () => {
-    console.log(`Sistema Fisio+ rodando em http://localhost:${port}`)
+    console.log(`Fisio+ rodando em http://localhost:${port}`)
 })
